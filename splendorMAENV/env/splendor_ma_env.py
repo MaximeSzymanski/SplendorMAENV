@@ -39,8 +39,18 @@ class SplendorMAEnv(AECEnv):
         self.truncations = {agent: False for agent in self.agents}
         self.infos = {agent: {} for agent in self.agents}
         self.state = {agent: None for agent in self.agents}
-        self.observations = {agent: None for agent in self.agents}
-        self.from_board_states_to_obs_train(1)
+        if self.game.currentPlayer == 0:
+            self.observations = {
+                "player_1" : self.from_board_states_to_obs_train(1),
+                "player_2" : self.from_board_states_to_obs_train(2)
+            }
+        else:
+            self.observations = {
+                "player_1": self.from_board_states_to_obs_train(1),
+                "player_2": self.from_board_states_to_obs_train(2)
+            }
+
+
         self.num_moves = 0
         """
         Our agent_selector utility allows easy cyclic stepping through the agents list.
@@ -101,6 +111,7 @@ class SplendorMAEnv(AECEnv):
         # stores action of current agent
         self.state[self.agent_selection] = action
         self.apply_action(action)
+        print(f'action : {action}')
         both_players_passed = action == 65 and self.last_action == 65
         if both_players_passed:
             print(f'=====================================================')
@@ -110,9 +121,10 @@ class SplendorMAEnv(AECEnv):
         if self._agent_selector.is_last():
 
             self.rewards[self.agents[0]] , self.rewards[self.agents[1]] = self.game.get_player_victory_point(0), self.game.get_player_victory_point(1)
-            self.terminations = {agent: self.game.is_last_turn() or both_players_passed  for agent in self.agents}
-            self.truncations = {agent: self.game.is_last_turn() or both_players_passed for agent in self.agents}
-
+            self.terminations = {agent: bool(self.game.is_last_turn() or both_players_passed)  for agent in self.agents}
+            self.truncations = {agent: bool(self.game.is_last_turn() or both_players_passed) for agent in self.agents}
+            print( self.terminations)
+            print(self.terminations)
             for i in self.agents:
                 self.observations[i] = self.from_board_states_to_obs_train(i)
         else:
@@ -161,10 +173,11 @@ class SplendorMAEnv(AECEnv):
         # if the length of the list smaller than 20, we padd with 90
         list_of_cards = [
             card.cardId for card in state[player_string]['cards'] if card is not None]
+
+
         if len(list_of_cards) < 20:
             for i in range(20 - len(list_of_cards)):
                 list_of_cards.append(90)
-
         obs[6:26] = list_of_cards
         # same for nobles, if the length of the list smaller than 5, we padd with 10
         list_of_nobles = [
@@ -193,10 +206,10 @@ class SplendorMAEnv(AECEnv):
         # same for player 2
         list_of_cards = [
             card.cardId for card in state[opponent_string]['cards'] if card is not None]
+
         if len(list_of_cards) < 20:
             for i in range(20 - len(list_of_cards)):
                 list_of_cards.append(90)
-
         obs[40:60] = list_of_cards
         list_of_nobles = [
             patron.patron_id for patron in state[opponent_string]['nobles']]
@@ -252,6 +265,7 @@ class SplendorMAEnv(AECEnv):
         # save it as a pickle
 
         obs = self.normalize_obs(obs)
+        obs = np.array(obs,dtype=float)
         self.obs = obs
 
         self.encoded_state = state

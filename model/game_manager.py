@@ -154,7 +154,6 @@ class GameManager():
                 'nobles': self._patronController.patrons,
                 'tokens': self._bankController.bank
             }
-
             return dictionary
         elif player_id == self._playerController.idHumanPlayer:
             dictionary = {
