@@ -7,7 +7,6 @@ from model.shop_controller import ShopController
 from model.token_array import TokenArray
 from utils.logger import Logger
 from model.player import Player
-from ai.model_ppo import PPO
 import random
 import numpy
 import pickle
@@ -110,6 +109,10 @@ class GameManager():
         Returns:
             dict: The board state.
             """
+        if player_id == ['Player_1']:
+            player_id = 0
+        else :
+            player_id = 1
         assert isinstance(player_id, int)
 
         if player_id == self.cpu_Id:
